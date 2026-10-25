@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sum of Beauty of All Substrings — Confusion to Intuition</title>
+<style>
+:root{--bg:#0b1020;--card:#121a30;--bd:#243052;--tx:#e8ecf8;--mu:#9aa6c8;--a:#4cc9f0;--b:#ffb703;--c:#52d6a0}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:clamp(1.5rem,5vw,2.3rem);margin:.2em 0}h2{font-size:1.35rem;margin:0 0 .4em;color:var(--a)}h3{margin:.2em 0;color:var(--b)}
+section{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin:16px 0}
+.mu{color:var(--mu)}.q{border-left:4px solid var(--b);padding:6px 12px;background:#1a2340;border-radius:8px;margin:10px 0}
+code,.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+button{font:inherit;background:#1b2750;color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;cursor:pointer;min-height:40px}
+button:hover{border-color:var(--a)}button.on,button[aria-selected=true]{background:var(--a);color:#06101f;border-color:var(--a);font-weight:700}
+:focus-visible{outline:3px solid var(--b);outline-offset:2px}
+input[type=text]{font:inherit;background:#0e1530;color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:8px 12px;min-height:40px;width:min(100%,320px)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+.tiles{display:flex;gap:8px;flex-wrap:wrap}
+.tile{width:52px;height:60px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0e1530;border:2px solid var(--bd);font-size:1.4rem;font-weight:700;padding:0;transition:.25s}
+.tile small{font-size:.65rem;color:var(--mu);font-weight:400}
+.tile.in{border-color:var(--a);background:#10335a}.tile.hl{border-color:var(--b);background:#5a4000;transform:translateY(-4px)}.tile.kk{box-shadow:0 0 0 3px var(--c)}
+.grid{display:grid;gap:12px}@media(min-width:860px){.grid.two{grid-template-columns:1fr 1fr}}
+.code{background:#0a0f20;border:1px solid var(--bd);border-radius:12px;padding:6px 0;overflow-x:auto;font-size:.85rem}
+.ln{display:flex;gap:10px;padding:1px 10px;cursor:pointer;min-height:22px;white-space:pre}
+.ln.blank{cursor:default}.ln:not(.blank):hover{background:#16213f}.ln.pin{background:#2a2410}.ln.act{background:#0f3a4a;box-shadow:inset 3px 0 var(--a)}
+.no{color:#5d6a90;width:2ch;text-align:right;flex:none}
+.box{background:#0e1530;border:1px solid var(--bd);border-radius:12px;padding:10px 12px}
+.vars{display:flex;flex-wrap:wrap;gap:8px}.v{background:#16213f;border-radius:10px;padding:4px 10px}.v b{color:var(--b)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;min-height:34px}.chip{background:#16213f;border:1px solid var(--bd);border-radius:999px;padding:2px 10px}.chip.hl{border-color:var(--b);background:#5a4000}
+.arr{display:grid;grid-template-columns:repeat(13,1fr);gap:3px}.cell{background:#0e1530;border:1px solid var(--bd);border-radius:6px;text-align:center;font-size:.72rem;padding:2px 0;transition:.2s}
+.cell b{display:block;font-size:.9rem}.cell.nz{border-color:var(--a);background:#10335a}.cell.hl{border-color:var(--b);background:#5a4000}.cell.sc{box-shadow:0 0 0 2px var(--c)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{border:1px solid var(--bd);padding:5px 8px;text-align:left}th{background:#16213f}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}.ok{color:var(--c)}.bad{color:#ff6b6b}
+.rec li{opacity:.25;transition:.4s;margin:6px 0}.rec li.show{opacity:1}
+svg{max-width:100%}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style></head><body><main>
+<header><div class="mu">GFG POTD · Oct 25 · Confusion to Intuition</div><h1>Sum of Beauty of All Substrings</h1>
+<p>Given a string <code>s</code>, find the sum of the beauty of all its substrings.<br><b>beauty = max frequency − min <u>positive</u> frequency</b> (zero-frequency characters ignore hote hain).</p></header>
+
+<section id="play"><h2>1 · Pehle beauty ko haath se samjho</h2>
+<p class="mu">String <code>aabc</code>. Start aur end tile par click karo (pehla click = start, doosra = end).</p>
+<div class="tiles" id="pt"></div><div class="box" id="pinfo" style="margin-top:10px" aria-live="polite"></div></section>
+
+<section id="learn"><h2>2 · Derive karo, memorize nahi</h2>
+<div class="tabs" role="tablist" id="tabs"></div>
+<div id="story"></div>
+<div id="lab" style="margin-top:12px">
+ <div class="row"><label>Input (a–z, max 10): <input type="text" id="lin" value="aabc" maxlength="10" spellcheck="false"></label><button id="lset">Load</button><span class="mu" id="lerr" role="alert"></span></div>
+ <div class="grid two">
+  <div><div class="code" id="code" aria-label="C++ code"></div>
+   <div class="box" id="exp" style="margin-top:8px" aria-live="polite"></div></div>
+  <div><div class="tiles" id="vt"></div><div class="vars" id="vars" style="margin:10px 0"></div>
+   <div class="box"><div class="mu" id="flab"></div><div id="fv"></div></div>
+   <div class="box" id="note" style="margin-top:8px;border-color:var(--c)" aria-live="polite"></div></div>
+ </div>
+ <div class="row"><button id="bprev">◀ Prev</button><button id="bnext">Next ▶</button><button id="bplay">▶ Play</button><button id="bsub">⏭ Next substring</button><button id="breset">Reset</button><button id="breplay">Replay</button>
+  <label>Speed <input type="range" id="spd" min="1" max="10" value="5"></label><span class="mu" id="stc"></span></div>
+ <p class="mu">Tip: code line par click karo explanation ke liye; ← → keys se step karo.</p>
+</div>
+<div id="cx"></div></section>
+
+<section id="cmp"><h2>3 · Teeno approaches</h2><div style="overflow-x:auto"><table>
+<tr><th>Approach</th><th>Method</th><th>Time</th><th>Aux space</th></tr>
+<tr><td>1 Brute force</td><td>Har substring ka map scratch se</td><td>O(n³)</td><td>O(1) (≤26 keys)</td></tr>
+<tr><td>2 Incremental map</td><td>Start fix, sirf naye char ki count update</td><td>O(n²)</td><td>O(1)</td></tr>
+<tr><td>3 Incremental array</td><td>Same, par freq[26] array</td><td>O(n²)</td><td>O(1)</td></tr></table></div>
+<p class="q">Sabse bada improvement <b>repeated counting hatane</b> se aaya (O(n³) → O(n²)). Map ki jagah array ek further simplification hai jo fixed alphabet ki wajah se possible hua — asymptotic time O(n²) hi rehta hai.</p></section>
+
+<section id="grow"><h2>4 · O(n³) vs O(n²) — illustration</h2>
+<label>n = <b id="gn">20</b> <input type="range" id="gr" min="1" max="60" value="20"></label>
+<svg id="gsv" viewBox="0 0 320 170" role="img" aria-label="Growth of operations"></svg>
+<div class="vars" id="gv"></div>
+<p class="mu">Ye operation growth ka illustration hai, precise runtime benchmark nahi.</p>
+<p>Approach 1: <code>O(n²) substrings × O(n) recounting = O(n³)</code><br>Approach 2/3: <code>O(n²) substrings × O(1) frequency processing = O(n²)</code> (alphabet fixed 26 hai, isliye O(1)).</p></section>
+
+<section id="test"><h2>5 · Khud test karo</h2>
+<div class="row"><input type="text" id="tin" value="aabc" maxlength="300" spellcheck="false" aria-label="lowercase string"><button id="trun" class="on">Run</button></div>
+<div class="row" id="tex"></div><div id="tout" aria-live="polite"></div></section>
+
+<section id="recap"><h2>6 · Final intuition recap</h2><button id="rplay" class="on">Play recap</button>
+<ol class="rec" id="rl"></ol><p class="q" id="rend" style="opacity:.25">We didn't memorize a pattern. We understood the work, noticed what was repeated, reused what we already knew, and chose a data structure that matched the input.</p></section>
+</main>
+<script>
+"use strict";
+const $=q=>document.querySelector(q),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const INF=2147483647,RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* ---------- pure implementations (no rendering) ---------- */
+function ref(s){let t=0;for(let i=0;i<s.length;i++)for(let j=i;j<s.length;j++){const f=Array(26).fill(0);for(let k=i;k<=j;k++)f[s.charCodeAt(k)-97]++;t+=bty(f)}return t}
+function bty(f){let mn=INF,mx=0;for(const c of f)if(c>0){mn=Math.min(mn,c);mx=Math.max(mx,c)}return mx-mn}
+function impl1(s){const n=s.length;let sum=0;for(let i=0;i<n;i++)for(let j=i;j<n;j++){const m=new Map();for(let k=i;k<=j;k++)m.set(s[k],(m.get(s[k])||0)+1);let mi=INF,ma=0;for(const v of m.values()){mi=Math.min(mi,v);ma=Math.max(ma,v)}sum+=ma-mi}return sum}
+function impl2(s){const n=s.length;let sum=0;for(let i=0;i<n;i++){const m=new Map();for(let j=i;j<n;j++){m.set(s[j],(m.get(s[j])||0)+1);let mi=INF,ma=0;for(const v of m.values()){mi=Math.min(mi,v);ma=Math.max(ma,v)}sum+=ma-mi}}return sum}
+function impl3(s){const n=s.length;let sum=0;for(let i=0;i<n;i++){const f=Array(26).fill(0);for(let j=i;j<n;j++){f[s.charCodeAt(j)-97]++;let mi=INF,ma=0;for(let k=0;k<26;k++)if(f[k]>0){mi=Math.min(mi,f[k]);ma=Math.max(ma,f[k])}sum+=ma-mi}}return sum}
+/* ---------- code + explanations ---------- */
+const C=[`class Solution {
+public:
+    int beautySum(string s) {
+        int n = s.size();
+        int sum = 0;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = i; j < n; j++) {
+                map<char, int> freq;
+
+                for (int k = i; k <= j; k++) {
+                    freq[s[k]]++;
+                }
+
+                int mini = INT_MAX;
+                int maxi = 0;
+
+                for (auto it : freq) {
+                    mini = min(mini, it.second);
+                    maxi = max(maxi, it.second);
+                }
+
+                sum += maxi - mini;
+            }
+        }
+
+        return sum;
+    }
+};`,`class Solution {
+public:
+    int beautySum(string s) {
+        int n = s.size();
+        int sum = 0;
+
+        for (int i = 0; i < n; i++) {
+            map<char, int> freq;
+
+            for (int j = i; j < n; j++) {
+                freq[s[j]]++;
+
+                int mini = INT_MAX;
+                int maxi = 0;
+
+                for (auto it : freq) {
+                    mini = min(mini, it.second);
+                    maxi = max(maxi, it.second);
+                }
+
+                sum += maxi - mini;
+            }
+        }
+
+        return sum;
+    }
+};`,`class Solution {
+public:
+    int beautySum(string s) {
+        int n = s.size();
+        int sum = 0;
+
+        for (int i = 0; i < n; i++) {
+            int freq[26] = {0};
+
+            for (int j = i; j < n; j++) {
+                freq[s[j] - 'a']++;
+
+                int mini = INT_MAX;
+                int maxi = 0;
+
+                for (int k = 0; k < 26; k++) {
+                    if (freq[k] > 0) {
+                        mini = min(mini, freq[k]);
+                        maxi = max(maxi, freq[k]);
+                    }
+                }
+
+                sum += maxi - mini;
+            }
+        }
+
+        return sum;
+    }
+};`].map(x=>x.split('\n'));
+const cm={0:"Solution class ek template hai; poora algorithm iske andar hota hai.",1:"public: matlab function bahar se call ho sakta hai.",2:"Function string s leta hai aur saare substrings ki beauty ka sum return karta hai.",
+3:"n = s.size(): length ek baar store ki taaki saare loops ki boundary clear rahe. Example: aabc → n = 4.",
+4:"sum = 0: answer ka accumulator. Abhi koi substring process nahi hua, toh total 0. Har substring ki beauty isme judegi."};
+const gen_='Ye closing brace hai: upar khula loop/block/function yahan band hota hai.';
+const mm={mini:"mini = INT_MAX: minimum dhoondhne ke liye sabse bada number se start, taaki koi bhi real frequency usse chhoti nikle.",maxi:"maxi = 0: frequencies positive hoti hain, toh 0 se shuru karke koi bhi frequency usse badi hogi.",add:"sum += maxi - mini: yahi current substring ki beauty hai (max − min positive). Isse total mein add karo. Example aab: 2 − 1 = 1.",ret:"return sum: saare substrings process ho gaye, toh accumulated total hi answer hai.",scanM:"Map ke har (char, count) par jao. Map mein sirf woh characters hain jo substring mein aaye, toh zero-frequency apne aap ignore ho jaate hain.",smin:"mini = min(mini, count): ab tak ki sabse chhoti positive frequency.",smax:"maxi = max(maxi, count): ab tak ki sabse badi frequency."};
+const EX=[{...cm,6:"i = starting index. 0 se n−1 tak, taaki har possible start try ho.",7:"j = ending index. j = i se shuru kyunki substring mein kam se kam s[i] hota hai. j aage badhne par substring i..j ek-ek character lamba hota hai. Total O(n²) substrings.",8:"Har substring ke liye NAYA map. Pichhla map kisi aur substring ka tha, toh count scratch se hoga — yahi repeated work hai.",10:"k substring i..j ke har character par chalta hai, kyunki frequency ke liye saare characters dekhne padte hain.",11:"freq[s[k]]++: s[k] ki count 1 badhao (naya key ho toh 0 se start). aab par: a→1, a→2, b→1.",14:mm.mini,15:mm.maxi,17:mm.scanM,18:mm.smin,19:mm.smax,22:mm.add,26:mm.ret,23:"j loop band: i se shuru hone wale saare substrings ho gaye.",24:"i loop band: saare starting indices ho gaye."},
+{...cm,6:"i = fixed starting index. Ab i ke saath substrings ki ek family banegi: i..i, i..i+1, ...",7:"Map har i par SIRF EK baar banta hai (j loop ke bahar). Naya start = naya family, isliye purani counts reset.",9:"j = i se n−1: substring ko ek-ek character extend karte hain. j badalne par map reset NAHI hota, kyunki pichhli frequencies ab bhi valid hain.",10:"freq[s[j]]++: sirf naya shamil hua character count hota hai. Baaki characters ki counts pichhli substring se already sahi hain. (Approach 1 mein k-loop poora recount karta tha.)",12:mm.mini+" Har naye substring ke liye dobara, kyunki naya char min/max badal sakta hai.",13:mm.maxi+" Har substring ke liye dobara nikalna padta hai.",15:"Map scan karke current substring ka max/min nikalte hain. Min kabhi bhi badal sakta hai (e.g. b ki count badhne par), isliye scan karna padta hai.",16:mm.smin,17:mm.smax,20:mm.add,21:"j loop band: is start index ke saare substrings ho gaye.",22:"i loop band: saare starting indices ho gaye.",24:mm.ret},
+{...cm,6:"i = starting index; har i se naye substrings ki family shuru.",7:"int freq[26] = {0}: 26 letters ke liye 26 cells, sab 0. Har i par naya (reset) kyunki start badla; j badalne par nahi.",9:"j = i se n−1: substring ek-ek character extend hota hai. Array rebuild nahi hota.",10:"freq[s[j]-'a']++: 'a'-'a' = 0, 'b'-'a' = 1, ... index nikalta hai aur direct cell badhata hai. Approach 2 ka freq[s[j]]++ bhi ek hi char ki count badhata hai — bas yahan key search ki jagah 0..25 index hai.",12:mm.mini,13:mm.maxi,15:"k = 0..25: saare 26 letters check. Hamesha 26 steps — constant, n par depend nahi.",16:"if (freq[k] > 0): zero wale letters substring mein hain hi nahi. Ye check na ho toh mini hamesha 0 ho jayega aur beauty galat. Zero ko ignore karna zaroori hai.",17:mm.smin,18:mm.smax,22:mm.add,23:"j loop band: is start ke saare substrings ho gaye.",24:"i loop band: saare starting indices ho gaye.",26:mm.ret}];
+C.forEach((c,a)=>c.forEach((t,l)=>{if(t.trim()&&!EX[a][l])EX[a][l]=gen_}));
+const LN=[{n:3,sum:4,fi:6,fj:7,map:8,fk:10,inc:11,mn:14,mx:15,scan:17,smin:18,smax:19,add:22,ret:26},
+{n:3,sum:4,fi:6,map:7,fj:9,inc:10,mn:12,mx:13,scan:15,smin:16,smax:17,add:20,ret:24},
+{n:3,sum:4,fi:6,map:7,fj:9,inc:10,mn:12,mx:13,scan:15,chk:16,smin:17,smax:18,add:22,ret:26}];
+/* ---------- trace generator: runs the real algorithm, records states ---------- */
+function gen(a,s){const n=s.length,L=LN[a],st=[];let f=Array(26).fill(0),i=-1,j=-1,k=-1,mn=null,mx=null,sum=0,hl=-1,sc=-1,sub=null;
+const E=(l,note)=>st.push({l,note,i,j,k,f:f.slice(),mn,mx,sum,hl,sc,sub:sub&&sub.slice()});
+E(L.n,`n = ${n}`);E(L.sum,'sum = 0');
+for(i=0;i<n;i++){j=-1;k=-1;sub=null;hl=-1;mn=mx=null;E(L.fi,`i = ${i}: start index fix`);
+ if(a)f.fill(0),E(L.map,'i badla → map/array reset');
+ for(j=i;j<n;j++){sub=[i,j];k=-1;sc=-1;const c=s.charCodeAt(j)-97;E(L.fj,`j = ${j}: substring "${s.slice(i,j+1)}"`);
+  if(!a){f.fill(0);hl=-1;E(L.map,'Naya khaali map — scratch se count hoga');
+   for(k=i;k<=j;k++){E(L.fk,`k = ${k}: s[k] = '${s[k]}'`);f[s.charCodeAt(k)-97]++;hl=s.charCodeAt(k)-97;E(L.inc,`'${s[k]}' ki count = ${f[hl]}`)}k=-1}
+  else{f[c]++;hl=c;E(L.inc,`Sirf naya char '${s[j]}' update: count = ${f[c]}. Baaki same!`)}
+  hl=-1;mn=INF;E(L.mn,'mini = INT_MAX');mx=0;E(L.mx,'maxi = 0');
+  for(let q=0;q<26;q++){if(a<2&&!f[q])continue;sc=q;E(L.scan,`'${String.fromCharCode(97+q)}' → ${f[q]}`);
+   if(f[q]>0){if(a==2)E(L.chk,`${f[q]} > 0 ✓ ye letter substring mein hai`);mn=Math.min(mn,f[q]);E(L.smin,`mini = ${mn}`);mx=Math.max(mx,f[q]);E(L.smax,`maxi = ${mx}`)}
+   else if(a==2)E(L.chk,'0 → ignore')}
+  sc=-1;sum+=mx-mn;E(L.add,`beauty("${s.slice(i,j+1)}") = ${mx} − ${mn} = ${mx-mn}; sum = ${sum}`)}}
+sub=null;E(L.ret,`return ${sum}`);return st}
+/* ---------- story text ---------- */
+const AP=[{t:"Approach 1 — Brute force",q:"Sabse straightforward approach kya hogi?",p:"Saare substrings generate karte hain. Har substring ke liye ek map banate hain, characters ki frequencies count karte hain, max aur min nikaalte hain, aur beauty ko answer mein add kar dete hain.",
+ th:"Har substring ke liye hum characters dobara count kar rahe hain. Kya pichhli substring ki information reuse ho sakti hai?",
+ cx:"<b>Complexity:</b> n² substrings. Har substring ke liye k-loop uske saare characters traverse karta hai (length L). Map update O(log k) hai, par k ≤ 26 toh n ke hisaab se O(L). Max/min scan ≤ 26. <br><code>O(n²) substrings × O(n) recounting = O(n³)</code>. Space: map mein ≤ 26 keys → O(1)."},
+{t:"Approach 2 — Incremental map",q:"Toh kya har substring ke liye poora map dobara banana zaroori hai?",p:"Dekho: a → aa → aab → aabc. Pichhli substring ki frequencies already pata hain. Ek character add karne par sirf us character ki frequency change hoti hai. Nahi! Start index fix karo, substring ko ek-ek character extend karo, har baar bas naye character ki frequency update karo. Animation mein dekho: k-loop ab gayab hai.",
+ th:"Jab pata hai ki possible characters sirf 26 hain, toh kya frequency store karne ka aur simple tareeka hai?",
+ cx:"<b>Complexity:</b> n² substrings; har ek par ek map update O(log k) + map scan O(k), k ≤ 26 → constants. <code>O(n³) → O(n²)</code>. Improve isliye hua kyunki ab har substring ke characters scratch se recount nahi ho rahe. Space O(1)."},
+{t:"Approach 3 — Incremental array",q:"Jab possible characters sirf 26 hain, toh frequencies ke liye map ki zaroorat hai?",p:"Constraint: string mein sirf lowercase English letters. Toh hum size 26 ka array bana sakte hain jahan har character ka fixed index hai: a→0, b→1, c→2 … z→25, formula <code>index = character − 'a'</code>. Ab key search ki zaroorat nahi, seedha cell update.<div class=chips id=ltr style=margin-top:6px></div>",
+ th:"",
+ cx:"<b>Complexity:</b> n² substrings; ek cell update O(1); 26 entries ka scan O(26) = O(1). <code>O(n²) × O(1) = O(n²)</code>. Array map se asymptotically fast nahi hai — fixed alphabet ki wajah se ek natural, simple choice hai. Space O(1)."}];
+/* ---------- explorer ---------- */
+let app=0,steps=[],idx=0,str="aabc",pin=null,timer=null;
+function stop(){clearTimeout(timer);timer=null;$('#bplay').textContent='▶ Play'}
+function stopAll(){stop();clearTimeout(rt);rt=null}
+function setApp(a){stopAll();app=a;pin=null;[...$('#tabs').children].forEach((b,x)=>b.setAttribute('aria-selected',x==a));
+ const A=AP[a];$('#story').innerHTML=`<h3>${A.t}</h3><div class="q">${A.q}</div><p>${A.p}</p>`;
+ if(a==2){const l=$('#ltr');for(let q=0;q<26;q++){const d=document.createElement('span');d.className='chip';d.textContent=String.fromCharCode(97+q)+'→'+q;l.append(d)}}
+ $('#cx').innerHTML=`<div class="box">${A.cx}</div>`+(A.th?`<details class="q"><summary>🤔 Ruko, socho: ${A.th}</summary><p>Haan — ${a==0?"pichhla kaam reuse karenge: Approach 2 tab par jao.":"Approach 3 tab par jao."}</p></details>`:'');
+ const cd=$('#code');cd.innerHTML='';C[a].forEach((t,l)=>{const d=document.createElement('div');d.className='ln'+(t.trim()?'':' blank');d.dataset.l=l;if(t.trim()){d.tabIndex=0;d.setAttribute('role','button')}d.innerHTML=`<span class="no">${l+1}</span><code></code>`;d.lastChild.textContent=t;cd.append(d)});
+ load()}
+function load(){stop();steps=gen(app,str);idx=0;
+ const vt=$('#vt');vt.innerHTML='';[...str].forEach((ch,x)=>{const d=document.createElement('div');d.className='tile';d.innerHTML=`<span></span><small>${x}</small>`;d.firstChild.textContent=ch;vt.append(d)});
+ render()}
+function render(){const S=steps[idx],L=LN[app];
+ document.querySelectorAll('#code .ln').forEach(e=>{const l=+e.dataset.l;e.classList.toggle('act',l===S.l);e.classList.toggle('pin',l===pin)});
+ [...$('#vt').children].forEach((t,x)=>{const sb=S.sub;t.classList.toggle('in',!!sb&&x>=sb[0]&&x<=sb[1]);t.classList.toggle('kk',x===S.k);
+  const isNew=S.hl>=0&&sb&&(app?x===sb[1]:x===S.k&&false)||(!app&&S.hl>=0&&x===S.k-0&&S.l===L.inc);t.classList.toggle('hl',!!isNew)});
+ const b=S.mx!=null&&S.mn!=null&&S.mn<INF?S.mx-S.mn:'–';
+ $('#vars').innerHTML=[['i',S.i<0?'–':S.i],['j',S.j<0?'–':S.j],...(app==0?[['k',S.k<0?'–':S.k]]:[]),['mini',S.mn==null?'–':S.mn>=INF?'INT_MAX':S.mn],['maxi',S.mx==null?'–':S.mx],['beauty',b],['sum',S.sum]].map(([k,v])=>`<span class="v">${k} = <b>${v}</b></span>`).join('');
+ const fv=$('#fv');fv.innerHTML='';
+ if(app<2){$('#flab').textContent='map<char,int> freq (sorted by key)';const w=document.createElement('div');w.className='chips';S.f.forEach((c,q)=>{if(c){const d=document.createElement('span');d.className='chip'+(q===S.hl?' hl':'');d.textContent=String.fromCharCode(97+q)+' → '+c;w.append(d)}});if(!w.children.length)w.textContent='{ } khaali';fv.append(w)}
+ else{$('#flab').textContent='int freq[26] (index = ch − \'a\')';const w=document.createElement('div');w.className='arr';S.f.forEach((c,q)=>{const d=document.createElement('div');d.className='cell'+(c?' nz':'')+(q===S.hl?' hl':'')+(q===S.sc?' sc':'');d.innerHTML=`${String.fromCharCode(97+q)}<b>${c}</b>`;w.append(d)});fv.append(w)}
+ $('#note').textContent=S.note;
+ const l=pin!=null?pin:S.l;$('#exp').innerHTML=`<b>Line ${l+1}:</b> <code>${esc(C[app][l].trim())}</code><br>${esc(EX[app][l])}${pin!=null?'':'<br><span class="mu">(Active line — kisi bhi line par click karke uska explanation dekho)</span>'}`;
+ $('#stc').textContent=`Step ${idx+1}/${steps.length}`}
+function go(d){pin=null;idx=Math.max(0,Math.min(steps.length-1,idx+d));render()}
+function play(){if(timer){stop();return}if(idx>=steps.length-1)idx=0;$('#bplay').textContent='⏸ Pause';
+ const tick=()=>{if(idx>=steps.length-1){stop();return}go(1);timer=setTimeout(tick,1600-$('#spd').value*150)};timer=setTimeout(tick,200)}
+$('#bnext').onclick=()=>{stop();go(1)};$('#bprev').onclick=()=>{stop();go(-1)};$('#bplay').onclick=play;
+$('#breset').onclick=()=>{stop();pin=null;idx=0;render()};$('#breplay').onclick=()=>{stop();pin=null;idx=0;render();play()};
+$('#bsub').onclick=()=>{stop();pin=null;let q=idx+1;while(q<steps.length-1&&steps[q].l!==LN[app].add)q++;idx=Math.min(q,steps.length-1);render()};
+$('#code').onclick=e=>{const d=e.target.closest('.ln');if(d&&!d.classList.contains('blank')){pin=+d.dataset.l;render()}};
+$('#code').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){const d=e.target.closest('.ln');if(d&&!d.classList.contains('blank')){e.preventDefault();pin=+d.dataset.l;render()}}};
+$('#lab').addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight'){e.preventDefault();stop();go(1)}if(e.key==='ArrowLeft'){e.preventDefault();stop();go(-1)}});
+$('#lset').onclick=()=>{const v=$('#lin').value.trim();if(!/^[a-z]{1,10}$/.test(v)){$('#lerr').textContent='1–10 lowercase letters (a–z) daalo.';return}$('#lerr').textContent='';str=v;load()};
+$('#lin').onkeydown=e=>{if(e.key==='Enter')$('#lset').click()};
+AP.forEach((A,a)=>{const b=document.createElement('button');b.role='tab';b.textContent='Approach '+(a+1);b.onclick=()=>setApp(a);$('#tabs').append(b)});
+/* ---------- playground ---------- */
+const PS="aabc";let ps=null,pe=null;
+function pr(){const t=$('#pt');t.innerHTML='';[...PS].forEach((c,x)=>{const b=document.createElement('button');b.className='tile'+(ps!=null&&pe!=null&&x>=ps&&x<=pe?' in':'')+(x===ps&&pe==null?' hl':'');b.innerHTML=`<span></span><small>${x}</small>`;b.firstChild.textContent=c;b.setAttribute('aria-label',`character ${c} at ${x}`);b.onclick=()=>{if(ps==null||pe!=null){ps=x;pe=null}else{pe=Math.max(x,ps);ps=Math.min(x,ps)}pr()};t.append(b)});
+ const o=$('#pinfo');if(ps==null||pe==null){o.textContent='Ek start aur ek end tile choose karo.';return}
+ const f=Array(26).fill(0);for(let k=ps;k<=pe;k++)f[PS.charCodeAt(k)-97]++;const be=bty(f),mx=Math.max(...f),mn=Math.min(...f.filter(c=>c>0));
+ let run=0;for(let i=0;i<PS.length;i++)for(let j=i;j<PS.length;j++){const g=Array(26).fill(0);for(let k=i;k<=j;k++)g[PS.charCodeAt(k)-97]++;run+=bty(g);if(i===ps&&j===pe){i=99;break}}
+ o.innerHTML=`Substring: <b></b><br>Frequencies: ${f.map((c,q)=>c?String.fromCharCode(97+q)+'→'+c:'').filter(Boolean).join(', ')}<br>max = <b>${mx}</b>, min positive = <b>${mn}</b>, beauty = <b>${be}</b><br>Running total (enumeration order i,j) = <b>${run}</b> · Final answer = <b>${ref(PS)}</b>`;o.querySelector('b').textContent=PS.slice(ps,pe+1)}
+/* ---------- growth ---------- */
+function gr(){const n=+$('#gr').value;$('#gn').textContent=n;const o3=x=>x*(x+1)*(x+2)/6,o2=x=>x*(x+1)/2,M=o3(60);let p3='',p2='';
+ for(let x=1;x<=60;x++){const X=20+x*4.8;p3+=`${X},${150-o3(x)/M*130} `;p2+=`${X},${150-o2(x)/M*130} `}
+ const X=20+n*4.8;$('#gsv').innerHTML=`<line x1=20 y1=150 x2=310 y2=150 stroke="#5d6a90"/><polyline points="${p3}" fill="none" stroke="#ffb703" stroke-width=2.5 /><polyline points="${p2}" fill="none" stroke="#4cc9f0" stroke-width=2.5 /><line x1=${X} y1=10 x2=${X} y2=150 stroke="#52d6a0" stroke-dasharray="4"/><text x=24 y=18 fill="#ffb703" font-size=11>n³-type growth</text><text x=24 y=32 fill="#4cc9f0" font-size=11>n²-type growth</text><text x=160 y=166 fill="#9aa6c8" font-size=10>n →</text>`;
+ $('#gv').innerHTML=`<span class=v>Approach 1 ≈ <b>${o3(n).toLocaleString()}</b> char-visits</span><span class=v>Approach 2/3 ≈ <b>${o2(n).toLocaleString()}</b> substrings</span>`}
+$('#gr').oninput=gr;
+/* ---------- tester ---------- */
+function tr(){const v=$('#tin').value,o=$('#tout');if(!v){o.innerHTML='<span class=bad>Empty input: koi string nahi, answer 0 maan lo par pehle kuch type karo.</span>';return}
+ if(!/^[a-z]+$/.test(v)){o.innerHTML='<span class=bad>Sirf lowercase English letters (a–z) allowed hain.</span>';return}
+ const r=ref(v),R=[impl1,impl2,impl3].map((f,x)=>v.length>150&&x==0?null:f(v)),ok=R.every(x=>x===null||x===r);
+ let rows='',i0=0,cnt=0;for(let i=0;i<v.length&&cnt<45;i++){const f=Array(26).fill(0);for(let j=i;j<v.length&&cnt<45;j++){f[v.charCodeAt(j)-97]++;cnt++;rows+=`<tr><td>${esc(v.slice(i,j+1))}</td><td>${f.map((c,q)=>c?String.fromCharCode(97+q)+c:'').join(' ')}</td><td>${bty(f)}</td></tr>`}}
+ o.innerHTML=`<p>Reference = <b>${r}</b> · A1 = <b>${R[0]??'skipped (n>150, O(n³))'}</b> · A2 = <b>${R[1]}</b> · A3 = <b>${R[2]}</b> <span class="${ok?'ok':'bad'}">${ok?'✓ sab match':'✗ mismatch'}</span></p><div style="overflow-x:auto"><table><tr><th>Substring</th><th>Freq</th><th>Beauty</th></tr>${rows}</table></div>${cnt>=45?'<p class=mu>Pehle 45 substrings dikhaye.</p>':''}`}
+$('#trun').onclick=tr;$('#tin').onkeydown=e=>{if(e.key==='Enter')tr()};
+[['a',0],['aa',0],['aab',1],['aabc',5],['abc',0],['aaaa',0],['abca',2]].forEach(([s,x])=>{const b=document.createElement('button');b.textContent=s;b.title='expected '+x;b.onclick=()=>{$('#tin').value=s;tr()};$('#tex').append(b)});
+/* ---------- recap ---------- */
+const RC=["Humein har substring ki beauty chahiye thi.","Har substring ko scratch se recount karna repeated work tha.","Substring extend karne par sirf naye character ki frequency badalti hai.","Toh existing frequency information reuse ho sakti hai.","Input mein sirf lowercase English letters hain.","Isliye fixed-size array kaafi hai.","26 entries scan karna constant time hai.","Substrings O(n²) hain.","Toh final approach O(n²) time mein chalti hai."];
+let rt=null;RC.forEach(t=>{const l=document.createElement('li');l.textContent=t;$('#rl').append(l)});
+$('#rplay').onclick=()=>{stopAll();const L=[...$('#rl').children],E=$('#rend');L.forEach(x=>x.classList.remove('show'));E.style.opacity=.25;let x=0;
+ const t=()=>{if(x<L.length){L[x++].classList.add('show');rt=setTimeout(t,RM?0:1100)}else{E.style.opacity=1;rt=null}};t()};
+pr();gr();tr();setApp(0);
+</script></body></html>
